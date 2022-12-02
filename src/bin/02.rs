@@ -41,13 +41,12 @@ pub fn part_one(input: &str) -> Option<u32> {
                 .collect_tuple::<(Shape, Shape)>()
                 .unwrap()
         })
-        .collect_vec();
+        .fold(0, |total, (p1, p2)| {
+            let (_, score_2) = play_round((&p1, &p2));
+            total + score_2
+        });
 
-    let res = rounds.iter().fold(0, |total, (p1, p2)| {
-        let (_, score_2) = play_round((p1, p2));
-        total + score_2
-    });
-    Some(res)
+    Some(rounds)
 }
 
 enum RoundResult {
