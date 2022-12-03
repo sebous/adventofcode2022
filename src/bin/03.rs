@@ -45,7 +45,7 @@ pub fn part_two(input: &str) -> Option<u32> {
             let value = alph_i as u32 + 1 + if matching_char.is_uppercase() { 26 } else { 0 };
             value
         })
-        .sum::<u32>();
+        .sum();
     Some(total)
 }
 
