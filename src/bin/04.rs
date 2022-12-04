@@ -1,22 +1,22 @@
-use parse_display::{Display, FromStr};
-
-#[derive(Display, FromStr, Debug)]
-#[display("{x_min}-{x_max},{y_min}-{y_max}")]
-struct Assigment {
-    x_min: u32,
-    x_max: u32,
-    y_min: u32,
-    y_max: u32,
+fn parse_input(input: &str) -> impl Iterator<Item = (u32, u32, u32, u32)> + '_ {
+    input.lines().map(|line| {
+        let (x, y) = line.split_once(",").unwrap();
+        let (x_min, x_max) = x.split_once("-").unwrap();
+        let (y_min, y_max) = y.split_once("-").unwrap();
+        (
+            x_min.parse().unwrap(),
+            x_max.parse().unwrap(),
+            y_min.parse().unwrap(),
+            y_max.parse().unwrap(),
+        )
+    })
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let c = input
-        .lines()
-        .map(|line| line.parse::<Assigment>().unwrap())
+    let c = parse_input(input)
         .filter(|ass| {
-            if (ass.x_min >= ass.y_min && ass.x_max <= ass.y_max)
-                || (ass.y_min >= ass.x_min && ass.y_max <= ass.x_max)
-            {
+            let (x_min, x_max, y_min, y_max) = ass;
+            if (x_min >= y_min && x_max <= y_max) || (y_min >= x_min && y_max <= x_max) {
                 true
             } else {
                 false
@@ -27,14 +27,13 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let c = input
-        .lines()
-        .map(|line| line.parse::<Assigment>().unwrap())
+    let c = parse_input(input)
         .filter(|ass| {
-            if (ass.x_max >= ass.y_min && ass.x_max <= ass.y_max)
-                || (ass.y_min >= ass.x_min && ass.y_min <= ass.x_max)
-                || (ass.x_min >= ass.y_min && ass.x_min <= ass.y_max)
-                || (ass.y_max >= ass.x_min && ass.y_max <= ass.x_max)
+            let (x_min, x_max, y_min, y_max) = ass;
+            if (x_max >= y_min && x_max <= y_max)
+                || (y_min >= x_min && y_min <= x_max)
+                || (x_min >= y_min && x_min <= y_max)
+                || (y_max >= x_min && y_max <= x_max)
             {
                 true
             } else {
