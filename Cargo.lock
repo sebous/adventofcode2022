@@ -9,6 +9,7 @@ dependencies = [
  "itertools",
  "parse-display",
  "pico-args",
+ "regex",
 ]
 
 [[package]]

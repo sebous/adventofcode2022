@@ -4,7 +4,6 @@
  */
 use advent_of_code::{ANSI_BOLD, ANSI_ITALIC, ANSI_RESET};
 use std::process::Command;
-
 fn main() {
     let total: f64 = (1..=25)
         .map(|day| {
