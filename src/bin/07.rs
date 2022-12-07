@@ -24,11 +24,9 @@ fn build_tree(input: &str) -> HashMap<String, u64> {
                 let num = first.parse::<u64>();
                 match num {
                     Ok(num) => {
-                        for (path, value) in tree.iter_mut() {
-                            if pwd.join("").starts_with(path) {
-                                *value += num;
-                            }
-                        }
+                        tree.iter_mut()
+                            .filter(|(path, _)| pwd.join("").starts_with(*path))
+                            .for_each(|(_, value)| *value += num);
                     }
                     _ => continue,
                 }
