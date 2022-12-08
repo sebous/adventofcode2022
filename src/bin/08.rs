@@ -5,7 +5,7 @@ use itertools::{
     Itertools,
 };
 
-pub fn part_one(input: &str) -> Option<u32> {
+fn create_grid(input: &str) -> (HashMap<(usize, usize), u8>, usize, usize) {
     let mut grid: HashMap<(usize, usize), u8> = HashMap::new();
     for (y, line) in input.lines().enumerate() {
         for (x, ch) in line.chars().enumerate() {
@@ -18,6 +18,12 @@ pub fn part_one(input: &str) -> Option<u32> {
         .max_by_key(|k| k.to_owned())
         .map(|(x, y)| (x + 1, y + 1))
         .unwrap();
+
+    (grid, width, height)
+}
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let (grid, width, height) = create_grid(input);
 
     let mut visible_cnt = 0;
 
@@ -43,19 +49,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let mut grid: HashMap<(usize, usize), u8> = HashMap::new();
-    for (y, line) in input.lines().enumerate() {
-        for (x, ch) in line.chars().enumerate() {
-            grid.insert((x, y), char::to_digit(ch, 10).unwrap() as u8);
-        }
-    }
-
-    let (width, height) = grid
-        .keys()
-        .max_by_key(|k| k.to_owned())
-        .map(|(x, y)| (x + 1, y + 1))
-        .unwrap();
-
+    let (grid, width, height) = create_grid(input);
     let mut max_dist = 0;
 
     for ((x1, y1), h1) in grid.iter() {
