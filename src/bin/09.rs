@@ -77,15 +77,14 @@ fn solve(input: &str, tail_size: u8) -> HashSet<(i32, i32)> {
                     prev_pos = tails[i - 1];
                 }
 
-                let tail_pos = tails[i];
-
-                if !should_move(&prev_pos, &tail_pos) {
+                if !should_move(&prev_pos, &tails[i]) {
                     continue;
                 }
-                let (x, y) = tail_pos;
+                let (x, y) = tails[i];
 
                 let x_move = if prev_pos.0 > x { 1 } else { -1 };
                 let y_move = if prev_pos.1 > y { 1 } else { -1 };
+
                 if prev_pos.1 == y {
                     tails[i] = (x + x_move, y);
                 } else if prev_pos.0 == x {
@@ -93,8 +92,9 @@ fn solve(input: &str, tail_size: u8) -> HashSet<(i32, i32)> {
                 } else {
                     tails[i] = (x + x_move, y + y_move);
                 }
+
                 if i == tails.len() - 1 {
-                    visited_coords.insert(tail_pos);
+                    visited_coords.insert(tails[i]);
                 }
             }
         }
@@ -118,6 +118,13 @@ fn main() {
     let input = &advent_of_code::read_file("inputs", 9);
     advent_of_code::solve!(1, part_one, input);
     advent_of_code::solve!(2, part_two, input);
+
+    let mut pp = vec![1, 2, 3];
+    pp = pp
+        .iter()
+        .filter(|x| *x < &3)
+        .map(|x| x.to_owned())
+        .collect();
 }
 
 #[cfg(test)]
