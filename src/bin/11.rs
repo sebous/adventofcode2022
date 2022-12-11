@@ -1,8 +1,6 @@
-use std::cell::RefCell;
-
 use itertools::Itertools;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Op {
     Add(u64),
     AddSelf,
@@ -10,22 +8,22 @@ enum Op {
     MultiplySelf,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Monkey {
-    items: RefCell<Vec<u64>>,
+    items: Vec<u64>,
     operation: Op,
     test_division: u64,
     next_monkeys: (usize, usize),
-    inspected_count: RefCell<u64>,
+    inspected_count: u64,
 }
 
 impl Monkey {
-    fn clear_items(&self) {
-        *self.inspected_count.borrow_mut() += self.items.borrow().len() as u64;
-        self.items.borrow_mut().clear();
+    fn clear_items(&mut self) {
+        self.inspected_count += self.items.len() as u64;
+        self.items.clear();
     }
-    fn add_items(&self, items: &Vec<u64>) {
-        self.items.borrow_mut().extend(items);
+    fn add_items(&mut self, items: &Vec<u64>) {
+        self.items.extend(items);
     }
 }
 
@@ -68,26 +66,27 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
                 .collect_tuple()
                 .unwrap();
             Monkey {
-                items: RefCell::new(items.collect()),
+                items: items.collect(),
                 operation: op,
                 test_division,
                 next_monkeys,
-                inspected_count: RefCell::new(0),
+                inspected_count: 0,
             }
         })
         .collect_vec();
     monkeys
 }
 
-fn monkeys_play<F>(monkeys: Vec<Monkey>, rounds: u64, worry_modifier: F) -> u64
+fn monkeys_play<F>(mut monkeys: Vec<Monkey>, rounds: u64, worry_modifier: F) -> u64
 where
     F: Fn(u64) -> u64,
 {
     let mut throw_to_first = vec![];
     let mut throw_to_second = vec![];
     for _ in 0..rounds {
-        for monkey in &monkeys {
-            for item in monkey.items.borrow().iter() {
+        for index in 0..monkeys.len() {
+            let monkey = &mut monkeys[index];
+            for item in monkey.items.iter() {
                 let mut item = match monkey.operation {
                     Op::Add(num) => item + num,
                     Op::Multiply(num) => item * num,
@@ -101,16 +100,17 @@ where
                     throw_to_second.push(item);
                 }
             }
+            let (first, second) = monkey.next_monkeys;
             monkey.clear_items();
-            monkeys[monkey.next_monkeys.0].add_items(&throw_to_first);
-            monkeys[monkey.next_monkeys.1].add_items(&throw_to_second);
+            monkeys[first].add_items(&throw_to_first);
+            monkeys[second].add_items(&throw_to_second);
             throw_to_first.clear();
             throw_to_second.clear();
         }
     }
     let (a, b) = monkeys
         .iter()
-        .map(|monkey| *monkey.inspected_count.borrow())
+        .map(|monkey| monkey.inspected_count)
         .sorted()
         .rev()
         .next_tuple()
