@@ -12,9 +12,9 @@ enum Op {
 
 #[derive(Debug)]
 struct Monkey {
-    items: RefCell<Vec<u128>>,
+    items: RefCell<Vec<u64>>,
     operation: Op,
-    test_division: u32,
+    test_division: u64,
     next_monkeys: (usize, usize),
     inspected_count: RefCell<u64>,
 }
@@ -24,7 +24,7 @@ impl Monkey {
         *self.inspected_count.borrow_mut() += self.items.borrow().len() as u64;
         self.items.borrow_mut().clear();
     }
-    fn add_items(&self, items: Vec<u128>) {
+    fn add_items(&self, items: Vec<u64>) {
         self.items.borrow_mut().extend(items);
     }
 }
@@ -35,7 +35,7 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
         .map(|block| {
             let mut bl_lines = block.lines();
             let (_, items) = bl_lines.nth(1).unwrap().split_once(": ").unwrap();
-            let items = items.split(", ").map(|item| item.parse::<u128>().unwrap());
+            let items = items.split(", ").map(|item| item.parse::<u64>().unwrap());
             let op_line = bl_lines
                 .next()
                 .unwrap()
@@ -55,7 +55,7 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
                 .split_whitespace()
                 .last()
                 .unwrap()
-                .parse::<u32>()
+                .parse::<u64>()
                 .unwrap();
             let next_monkeys: (usize, usize) = bl_lines
                 .map(|line| {
@@ -79,20 +79,23 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
     monkeys
 }
 
-fn monkeys_play(monkeys: Vec<Monkey>, rounds: u64, division: u64) -> u128 {
+fn monkeys_play<F>(monkeys: Vec<Monkey>, rounds: u64, worry_modifier: F) -> u64
+where
+    F: Fn(u64) -> u64,
+{
     for _ in 0..rounds {
         for monkey in &monkeys {
             let mut throw_to_first = vec![];
             let mut throw_to_second = vec![];
             for item in monkey.items.borrow().iter() {
                 let mut item = match monkey.operation {
-                    Op::Add(num) => item + (num as u128),
-                    Op::Multiply(num) => item * (num as u128),
+                    Op::Add(num) => item + num,
+                    Op::Multiply(num) => item * num,
                     Op::AddSelf => item + item,
                     Op::MultiplySelf => item * item,
                 };
-                item /= division as u128;
-                if item % monkey.test_division as u128 == 0 {
+                item = worry_modifier(item);
+                if item % monkey.test_division == 0 {
                     throw_to_first.push(item);
                 } else {
                     throw_to_second.push(item);
@@ -110,19 +113,22 @@ fn monkeys_play(monkeys: Vec<Monkey>, rounds: u64, division: u64) -> u128 {
         .rev()
         .next_tuple()
         .unwrap();
-    let result = a as u128 * b as u128;
-    result
+    a * b
 }
 
-pub fn part_one(input: &str) -> Option<u128> {
+pub fn part_one(input: &str) -> Option<u64> {
     let monkeys = parse_monkeys(input);
-    let monkey_business_level = monkeys_play(monkeys, 20, 3);
+    let monkey_business_level = monkeys_play(monkeys, 20, |x| x / 3);
     Some(monkey_business_level)
 }
 
-pub fn part_two(input: &str) -> Option<u128> {
+pub fn part_two(input: &str) -> Option<u64> {
     let monkeys = parse_monkeys(input);
-    let monkey_business_level = monkeys_play(monkeys, 20, 1);
+    let product = monkeys
+        .iter()
+        .map(|m| m.test_division as u64)
+        .product::<u64>();
+    let monkey_business_level = monkeys_play(monkeys, 10000, |x: u64| -> u64 { x % product });
     Some(monkey_business_level)
 }
 
