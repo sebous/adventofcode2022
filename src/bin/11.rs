@@ -24,7 +24,7 @@ impl Monkey {
         *self.inspected_count.borrow_mut() += self.items.borrow().len() as u64;
         self.items.borrow_mut().clear();
     }
-    fn add_items(&self, items: Vec<u64>) {
+    fn add_items(&self, items: &Vec<u64>) {
         self.items.borrow_mut().extend(items);
     }
 }
@@ -83,10 +83,10 @@ fn monkeys_play<F>(monkeys: Vec<Monkey>, rounds: u64, worry_modifier: F) -> u64
 where
     F: Fn(u64) -> u64,
 {
+    let mut throw_to_first = vec![];
+    let mut throw_to_second = vec![];
     for _ in 0..rounds {
         for monkey in &monkeys {
-            let mut throw_to_first = vec![];
-            let mut throw_to_second = vec![];
             for item in monkey.items.borrow().iter() {
                 let mut item = match monkey.operation {
                     Op::Add(num) => item + num,
@@ -102,8 +102,10 @@ where
                 }
             }
             monkey.clear_items();
-            monkeys[monkey.next_monkeys.0].add_items(throw_to_first);
-            monkeys[monkey.next_monkeys.1].add_items(throw_to_second);
+            monkeys[monkey.next_monkeys.0].add_items(&throw_to_first);
+            monkeys[monkey.next_monkeys.1].add_items(&throw_to_second);
+            throw_to_first.clear();
+            throw_to_second.clear();
         }
     }
     let (a, b) = monkeys
