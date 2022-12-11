@@ -118,13 +118,6 @@ fn main() {
     let input = &advent_of_code::read_file("inputs", 9);
     advent_of_code::solve!(1, part_one, input);
     advent_of_code::solve!(2, part_two, input);
-
-    let mut pp = vec![1, 2, 3];
-    pp = pp
-        .iter()
-        .filter(|x| *x < &3)
-        .map(|x| x.to_owned())
-        .collect();
 }
 
 #[cfg(test)]
