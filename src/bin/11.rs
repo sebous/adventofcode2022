@@ -128,7 +128,7 @@ pub fn part_two(input: &str) -> Option<u64> {
         .iter()
         .map(|m| m.test_division as u64)
         .product::<u64>();
-    let monkey_business_level = monkeys_play(monkeys, 10000, |x: u64| -> u64 { x % product });
+    let monkey_business_level = monkeys_play(monkeys, 10000, |x| x % product);
     Some(monkey_business_level)
 }
 
