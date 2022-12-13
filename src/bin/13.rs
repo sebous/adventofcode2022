@@ -1,3 +1,5 @@
+use std::cmp::{self, Ordering};
+
 use itertools::Itertools;
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -7,8 +9,8 @@ enum Symbol {
 }
 
 fn collect_list(line: &str) -> (Symbol, usize) {
-    let mut open_brac = 0;
-    let mut close_brac = 0;
+    let mut open_brac_cnt = 0;
+    let mut close_brac_cnt = 0;
 
     let mut symbols = vec![];
 
@@ -21,68 +23,55 @@ fn collect_list(line: &str) -> (Symbol, usize) {
         }
     };
 
-    let mut iter = line.chars().enumerate();
+    let mut line_iter = line.chars().enumerate();
 
-    while let Some((i, ch)) = iter.next() {
+    while let Some((i, ch)) = line_iter.next() {
         match ch {
             dig if dig.is_digit(10) => buffer.push(dig),
             ',' => {
                 flush_buffer(&mut symbols, &mut buffer);
             }
             '[' => {
-                if open_brac == 1 {
+                if open_brac_cnt == 1 {
                     let (syms, end_i) = collect_list(&line[i..]);
                     symbols.push(syms);
-                    iter.nth(end_i - 1);
+                    line_iter.nth(end_i - 1);
                     continue;
                 } else {
-                    open_brac += 1;
+                    open_brac_cnt += 1;
                 }
             }
             ']' => {
-                close_brac += 1;
+                close_brac_cnt += 1;
                 flush_buffer(&mut symbols, &mut buffer);
             }
             _ => continue,
         }
-        if open_brac == close_brac {
-            // println!("{:?}", &symbols);
+        if open_brac_cnt == close_brac_cnt {
             return (Symbol::List(symbols), i);
         }
     }
     unimplemented!()
 }
 
-fn parse(input: &str) -> Vec<(Symbol, Symbol)> {
-    input
-        .split("\n\n")
-        .map(|pair| {
-            pair.lines()
-                .map(|line| collect_list(line).0)
-                .next_tuple()
-                .unwrap()
-        })
-        .collect_vec()
-}
-
-enum CmpResult {
-    Ok,
-    Rev,
-}
-
-fn compare_symbols((left, right): (&Symbol, &Symbol)) -> CmpResult {
+fn compare_symbols((left, right): (&Symbol, &Symbol)) -> Ordering {
     match (left, right) {
         (Symbol::List(a), Symbol::List(b)) => {
-            for a_index in 0..a.len() {
-                if a_index == b.len() {
-                    return CmpResult::Rev;
+            let list_max = cmp::max(a.len(), b.len());
+            for i in 0..list_max {
+                if i == a.len() {
+                    return Ordering::Less;
                 }
-                match compare_symbols((&a[a_index], &b[a_index])) {
-                    CmpResult::Ok => continue,
-                    CmpResult::Rev => return CmpResult::Rev,
+                if i == b.len() {
+                    return Ordering::Greater;
+                }
+                match compare_symbols((&a[i], &b[i])) {
+                    Ordering::Less => return Ordering::Less,
+                    Ordering::Greater => return Ordering::Greater,
+                    Ordering::Equal => continue,
                 }
             }
-            CmpResult::Ok
+            Ordering::Equal
         }
         (Symbol::List(_), Symbol::Num(b)) => {
             compare_symbols((left, &Symbol::List(vec![Symbol::Num(*b)])))
@@ -91,32 +80,69 @@ fn compare_symbols((left, right): (&Symbol, &Symbol)) -> CmpResult {
             compare_symbols((&Symbol::List(vec![Symbol::Num(*a)]), right))
         }
         (Symbol::Num(a), Symbol::Num(b)) => {
-            if a <= b {
-                CmpResult::Ok
+            if a < b {
+                Ordering::Less
+            } else if a == b {
+                Ordering::Equal
             } else {
-                CmpResult::Rev
+                Ordering::Greater
             }
         }
     }
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
-    let pairs = parse(input);
-    pairs.iter().for_each(|p| {
-        println!("P1: {:?}", p.0);
-        println!("P2: {:?}", p.1);
-        println!("-----");
-    });
-    let cnt = pairs
-        .iter()
-        .map(|(a, b)| compare_symbols((a, b)))
-        .filter(|res| matches!(res, CmpResult::Ok))
-        .count();
-    Some(cnt)
+    let result = input
+        .split("\n\n")
+        .map(|pair| {
+            pair.lines()
+                .map(|line| collect_list(line).0)
+                .next_tuple()
+                .unwrap()
+        })
+        .map(|(a, b)| compare_symbols((&a, &b)))
+        .enumerate()
+        .filter(|(_, res)| matches!(res, Ordering::Less))
+        .map(|(i, _)| i + 1)
+        .sum::<usize>();
+    Some(result)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+const ADDITIONAL_PACKETS: [&'static str; 2] = ["[[2]]", "[[6]]"];
+
+pub fn part_two(input: &str) -> Option<usize> {
+    let result = input
+        .lines()
+        .filter(|l| l != &"")
+        .chain(ADDITIONAL_PACKETS.into_iter())
+        .map(|l| collect_list(l).0)
+        .sorted_by(|a, b| compare_symbols((a, b)))
+        .enumerate()
+        .filter(|(_, packet)| match packet {
+            Symbol::List(syms) => {
+                if syms.len() != 1 {
+                    return false;
+                }
+                match &syms[0] {
+                    Symbol::List(syms) => {
+                        if syms.len() != 1 {
+                            return false;
+                        }
+                        match &syms[0] {
+                            Symbol::Num(n) if vec![2, 6].contains(&n) => true,
+                            _ => false,
+                        }
+                    }
+                    _ => false,
+                }
+            }
+            _ => unreachable!(),
+        })
+        .fold(
+            0,
+            |total, (i, _)| if total == 0 { i + 1 } else { total * (i + 1) },
+        );
+    Some(result)
 }
 
 fn main() {
