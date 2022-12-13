@@ -16,10 +16,10 @@ fn collect_list(line: &str) -> (Symbol, usize) {
 
     let mut buffer = String::new();
 
-    let flush_buffer = |symbols: &mut Vec<Symbol>, num_char_buffer: &mut String| {
-        if num_char_buffer.len() > 0 {
-            symbols.push(Symbol::Num(num_char_buffer.parse::<u8>().unwrap()));
-            num_char_buffer.clear();
+    let flush_buffer = |symbols: &mut Vec<Symbol>, buffer: &mut String| {
+        if buffer.len() > 0 {
+            symbols.push(Symbol::Num(buffer.parse::<u8>().unwrap()));
+            buffer.clear();
         }
     };
 
@@ -27,7 +27,7 @@ fn collect_list(line: &str) -> (Symbol, usize) {
 
     while let Some((i, ch)) = line_iter.next() {
         match ch {
-            dig if dig.is_digit(10) => buffer.push(dig),
+            dig if dig.is_numeric() => buffer.push(dig),
             ',' => {
                 flush_buffer(&mut symbols, &mut buffer);
             }
@@ -45,13 +45,13 @@ fn collect_list(line: &str) -> (Symbol, usize) {
                 close_brac_cnt += 1;
                 flush_buffer(&mut symbols, &mut buffer);
             }
-            _ => continue,
+            _ => unreachable!(),
         }
         if open_brac_cnt == close_brac_cnt {
             return (Symbol::List(symbols), i);
         }
     }
-    unimplemented!()
+    unreachable!()
 }
 
 fn compare_symbols((left, right): (&Symbol, &Symbol)) -> Ordering {
@@ -129,7 +129,7 @@ pub fn part_two(input: &str) -> Option<usize> {
                             return false;
                         }
                         match &syms[0] {
-                            Symbol::Num(n) if vec![2, 6].contains(&n) => true,
+                            Symbol::Num(2 | 6) => true,
                             _ => false,
                         }
                     }
