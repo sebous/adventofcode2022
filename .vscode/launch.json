@@ -29,7 +29,7 @@
             "name": "Debug executable 'advent_of_code'",
             "cargo": {
                 "args": [
-                    "build",
+                    "run",
                     "--bin=advent_of_code",
                     "--package=advent_of_code"
                 ],
@@ -48,7 +48,6 @@
             "cargo": {
                 "args": ["build", "--bin=12"]
             },
-            // "args": ["1"],
             "cwd": "${workspaceFolder}"
         },
         {

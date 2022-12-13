@@ -37,6 +37,19 @@ fn get_neighbours(x: &usize, y: &usize, grid: &Vec<Vec<char>>) -> Vec<(usize, us
     coords
 }
 
+fn print_visited(visited: &Vec<Vec<bool>>) {
+    for i in 0..visited[0].len() {
+        println!(
+            "{}",
+            visited
+                .iter()
+                .map(|col| if col[i] { "X" } else { "." })
+                .collect::<String>()
+        );
+    }
+    println!("-------");
+}
+
 fn find_start(grid: &Vec<Vec<char>>) -> (usize, usize) {
     for (x, col) in grid.iter().enumerate() {
         for (y, ch) in col.iter().enumerate() {
@@ -55,7 +68,7 @@ fn is_valid_path(
     grid: &Vec<Vec<char>>,
     visited: &Vec<Vec<bool>>,
 ) -> bool {
-    if x <= 0 || y <= 0 {
+    if x < 0 || y < 0 {
         return false;
     };
     let x = x as usize;
@@ -70,9 +83,15 @@ fn is_valid_path(
     let curr_char_index = ALPHABET_STR
         .chars()
         .position(|ch| grid[source.x][source.y] == ch);
-    if (is_start || is_next_end || (next_char_index.unwrap() <= (curr_char_index.unwrap() + 1)))
+    let curr_char = curr_char_index.and_then(|i| ALPHABET_STR.chars().nth(i));
+    // let next_char = next_char_index.and_then(|i| ALPHABET_STR.chars().nth(i));
+    if (is_start
+        || (is_next_end && curr_char.unwrap() == 'z')
+        || (next_char_index.is_some()
+            && next_char_index.unwrap() <= (curr_char_index.unwrap() + 1)))
         && !visited[x][y]
     {
+        // println!("{x} {y} {:#?} {:#?}", curr_char, next_char);
         return true;
     }
     false
@@ -98,8 +117,10 @@ fn find_shortest_path(grid: &Vec<Vec<char>>) -> usize {
         y: start.1,
         distance: 0,
     });
+    visited[start.0][start.1] = true;
 
     while queue.len() > 0 {
+        // print_visited(&visited);
         let source = queue.pop().unwrap();
 
         if grid[source.x][source.y] == 'E' {
@@ -168,6 +189,7 @@ fn find_shortest_path(grid: &Vec<Vec<char>>) -> usize {
         }
     }
 
+    dbg!(visited);
     todo!()
 }
 
