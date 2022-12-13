@@ -27,7 +27,7 @@ enum Axis {
     Y,
 }
 
-fn print_tails(tails: &Vec<(i32, i32)>) {
+fn _print_tails(tails: &Vec<(i32, i32)>) {
     for y in (-10..20).rev() {
         let line: String = (-20..30)
             .map(|x| {
@@ -99,7 +99,7 @@ fn solve(input: &str, tail_size: u8) -> HashSet<(i32, i32)> {
             }
         }
         // println!("--- {} ---", &line);
-        // print_tails(&tails);
+        // _print_tails(&tails);
     }
     visited_coords
 }

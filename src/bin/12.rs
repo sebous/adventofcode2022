@@ -15,29 +15,7 @@ fn parse(input: &str) -> Vec<Vec<char>> {
     grid
 }
 
-fn get_neighbours(x: &usize, y: &usize, grid: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
-    let x_min = if x > &0 { x - 1 } else { 0 };
-    let y_min = if y > &0 { y - 1 } else { 0 };
-    let x_max = if x < &(grid.len() - 1) as &usize {
-        x + 1
-    } else {
-        *x
-    };
-    let y_max = if y < &(grid[0].len() - 1) { y + 1 } else { *y };
-
-    let mut coords = vec![];
-
-    for x1 in x_min..=x_max {
-        for y1 in y_min..=y_max {
-            if (*x, *y) != (x1, y1) {
-                coords.push((x1, y1));
-            }
-        }
-    }
-    coords
-}
-
-fn print_visited(visited: &Vec<Vec<bool>>) {
+fn _print_visited(visited: &Vec<Vec<bool>>) {
     for i in 0..visited[0].len() {
         println!(
             "{}",
@@ -120,7 +98,7 @@ fn find_shortest_path(grid: &Vec<Vec<char>>) -> usize {
     visited[start.0][start.1] = true;
 
     while queue.len() > 0 {
-        // print_visited(&visited);
+        // _print_visited(&visited);
         let source = queue.pop().unwrap();
 
         if grid[source.x][source.y] == 'E' {

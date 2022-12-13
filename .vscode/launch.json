@@ -46,7 +46,7 @@
             "request": "launch",
             "name": "Debug executable day",
             "cargo": {
-                "args": ["build", "--bin=12"]
+                "args": ["build", "--bin=13"]
             },
             "cwd": "${workspaceFolder}"
         },
